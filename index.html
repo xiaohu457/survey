@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>星核智能 · AI体验调研</title>
+    <style>
+        :root {
+            --primary: #1a3a5c;
+            --primary-light: #2a5a8c;
+            --primary-dark: #0e1e30;
+            --accent: #3a7bd5;
+            --bg: #f4f7fa;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --text-light: #6b7c8a;
+            --border: #d5dee8;
+            --danger: #c0392b;
+            --danger-dark: #8b0000;
+            --progress-normal: #3a7bd5;
+            --progress-warning: #e67e22;
+            --progress-danger: #c0392b;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            --transition: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --font: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        html,
+        body {
+            height: 100%;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            min-height: 100vh;
+            position: relative;
+            transition: background 1.5s ease;
+            -webkit-font-smoothing: antialiased;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .darkness-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(80, 0, 0, 0.5) 0%, rgba(30, 0, 0, 0.9) 100%);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 5;
+            transition: opacity 1.2s ease;
+        }
+        .darkness-overlay.active {
+            opacity: 1;
+        }
+        .darkness-overlay.full-dark {
+            opacity: 1;
+            background: radial-gradient(ellipse at center, rgba(120, 0, 0, 0.7) 0%, rgba(40, 0, 0, 0.95) 100%);
+        }
+        .bg-atmosphere {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+        }
+        .bg-atmosphere.active {
+            opacity: 1;
+        }
+        .bg-atmosphere.danger-zone {
+            background: radial-gradient(ellipse at center, rgba(139, 0, 0, 0.15) 0%, rgba(40, 0, 0, 0.45) 80%);
+        }
+        .bg-atmosphere.warning-zone {
+            background: radial-gradient(ellipse at center, rgba(230, 60, 30, 0.1) 0%, rgba(80, 20, 0, 0.3) 80%);
+        }
+        .survey-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 520px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: filter 1.2s ease;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            max-height: 95vh;
+        }
+        .survey-container.dimmed {
+            filter: brightness(0.8) saturate(1.1);
+        }
+        .survey-container.darkened {
+            filter: brightness(0.6) saturate(1.3);
+        }
+        .survey-header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-light) 100%);
+            padding: 20px 20px 16px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .company-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            flex-shrink: 0;
+        }
+        .logo-icon.glitch {
+            animation: logoGlitch 0.3s ease 2;
+            background: rgba(200, 0, 0, 0.7);
+        }
+        @keyframes logoGlitch {
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-3px);
+            }
+            50% {
+                transform: translateX(3px);
+            }
+            75% {
+                transform: translateX(-1px);
+            }
+        }
+        .company-name {
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+        .company-name .sub {
+            font-size: 10px;
+            font-weight: 400;
+            opacity: 0.7;
+            display: block;
+        }
+        .survey-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+        .survey-subtitle {
+            font-size: 12px;
+            opacity: 0.75;
+            margin-top: 4px;
+        }
+        .intro-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 24px 24px;
+            text-align: center;
+            flex: 1;
+        }
+        .intro-screen.hidden {
+            display: none;
+        }
+        .intro-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        .intro-heading {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+        .intro-text {
+            font-size: 14px;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .intro-consent {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+        .intro-consent input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+        }
+        .start-survey-btn {
+            padding: 16px 40px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            cursor: pointer;
+            min-height: 52px;
+            width: 100%;
+            max-width: 280px;
+        }
+        .progress-section {
+            padding: 12px 20px 0;
+            background: var(--card-bg);
+            flex-shrink: 0;
+        }
+        .progress-bar-wrapper {
+            width: 100%;
+            height: 8px;
+            background: #e9edf2;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--progress-normal), var(--accent));
+            border-radius: 10px;
+            transition: width 0.6s, background 0.6s;
+            width: 0%;
+        }
+        .progress-bar-fill.danger {
+            background: linear-gradient(90deg, #e67e22, #c0392b) !important;
+        }
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0 4px;
+            font-size: 13px;
+            color: var(--text-light);
+        }
+        .progress-number {
+            font-weight: 600;
+            color: var(--text);
+        }
+        .progress-number.danger-text {
+            color: var(--danger);
+            font-weight: 700;
+        }
+        .progress-hidden-msg {
+            font-size: 12px;
+            opacity: 0;
+            color: var(--danger);
+            cursor: pointer;
+        }
+        .progress-hidden-msg.visible {
+            opacity: 1;
+        }
+        .survey-content {
+            padding: 18px 20px 14px;
+            min-height: 280px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            background: var(--card-bg);
+        }
+        .question-container {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1;
+        }
+        .question-container.active {
+            display: flex;
+        }
+        .question-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            color: var(--text-light);
+            margin-bottom: 6px;
+        }
+        .question-label.danger {
+            color: var(--danger);
+        }
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+        .question-text.crazy {
+            font-size: 16px;
+            color: #8b0000;
+            font-weight: 700;
+            word-break: break-all;
+        }
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .option-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            text-align: left;
+            padding: 16px 18px;
+            min-height: 56px;
+            font-size: 16px;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            background: #fafbfc;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .option-btn:active {
+            background: #eef3fa;
+            border-color: var(--accent);
+            transform: scale(0.98);
+        }
+        .option-btn.selected {
+            border-color: var(--accent);
+            background: #eaf2ff;
+            color: var(--primary);
+            font-weight: 500;
+        }
+        .option-btn .option-letter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--border);
+            font-size: 13px;
+            font-weight: 700;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .option-btn.selected .option-letter {
+            background: var(--accent);
+            color: #fff;
+        }
+        .option-btn.evil {
+            border-color: rgba(200, 0, 0, 0.25);
+        }
+        .input-area {
+            margin-top: 14px;
+        }
+        .input-area input[type="text"] {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 16px;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            background: #fafbfc;
+            outline: none;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        .input-live-feedback {
+            margin-top: 6px;
+            font-size: 13px;
+            color: var(--text-light);
+            min-height: 20px;
+            font-style: italic;
+        }
+        .input-live-feedback.danger {
+            color: var(--danger);
+            font-weight: 600;
+            font-style: normal;
+        }
+        .whisper-area {
+            margin-top: 14px;
+            padding: 10px 12px;
+            border-left: 2px solid rgba(200, 0, 0, 0.3);
+            background: rgba(250, 240, 240, 0.6);
+            border-radius: 0 8px 8px 0;
+            font-size: 13px;
+            color: #6b4a4a;
+            min-height: 24px;
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .whisper-area.visible {
+            opacity: 1;
+        }
+        .whisper-area.dark {
+            background: rgba(80, 10, 10, 0.8);
+            color: #ffb0b0;
+            border-left-color: #ff4444;
+            font-weight: 600;
+        }
+        .whisper-area .cursor {
+            display: inline-block;
+            width: 6px;
+            height: 14px;
+            background: #c0392b;
+            animation: blink 0.7s step-end infinite;
+            margin-left: 2px;
+        }
+        @keyframes blink {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
+        }
+        .glitch-text-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            font-weight: 900;
+            color: rgba(139, 0, 0, 0.08);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+            text-align: center;
+            width: 90%;
+        }
+        .glitch-text-overlay.visible {
+            opacity: 1;
+        }
+        .survey-footer {
+            padding: 12px 20px;
+            background: #fafbfc;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--text-light);
+            flex-shrink: 0;
+        }
+        .result-screen {
+            display: none;
+            padding: 30px 20px 24px;
+            text-align: center;
+            flex: 1;
+            flex-direction: column;
+            justify-content: center;
+            background: var(--card-bg);
+        }
+        .result-screen.active {
+            display: flex;
+        }
+        .result-icon {
+            font-size: 56px;
+            margin-bottom: 12px;
+        }
+        .result-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+        .result-score-display {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 16px;
+        }
+        .result-score-display span {
+            font-weight: 700;
+            font-size: 22px;
+            color: var(--primary);
+        }
+        .result-description {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text);
+            text-align: left;
+            background: #f8f9fb;
+            padding: 16px 18px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+            margin-bottom: 20px;
+        }
+        .result-description.crazy-result {
+            border-left-color: var(--danger);
+            background: #fff5f5;
+            color: #5a1a1a;
+        }
+        .result-description.cold-result {
+            border-left-color: #6b7c8a;
+            background: #f5f6f8;
+            color: #4a5a68;
+        }
+        .restart-btn {
+            padding: 16px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            cursor: pointer;
+            min-height: 52px;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        .mobile-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20, 20, 30, 0.9);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        .mobile-toast.show {
+            opacity: 1;
+        }
+        @media (max-width: 380px) {
+            .survey-header {
+                padding: 16px 14px 12px;
+            }
+            .survey-title {
+                font-size: 18px;
+            }
+            .question-text {
+                font-size: 16px;
+            }
+            .option-btn {
+                padding: 14px 14px;
+                font-size: 15px;
+                min-height: 50px;
+            }
+            .survey-content {
+                padding: 14px 14px 10px;
+                min-height: 240px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="darkness-overlay" id="darknessOverlay"></div>
+    <div class="bg-atmosphere" id="bgAtmosphere"></div>
+    <div class="glitch-text-overlay" id="glitchOverlay"></div>
+    <div class="mobile-toast" id="mobileToast"></div>
+
+    <div class="survey-container" id="surveyContainer">
+
+        <div class="survey-header" id="surveyHeader">
+            <div class="company-logo" id="companyLogo">
+                <div class="logo-icon" id="logoIcon">★</div>
+                <div class="company-name">星核智能科技<span class="sub">STAR CORE AI · 用户体验研究部</span></div>
+            </div>
+            <h1 class="survey-title" id="surveyTitle">AI助手使用体验调研问卷</h1>
+            <p class="survey-subtitle">问卷编号：SC-AI-2026-091 · 预计用时2-4分钟</p>
+        </div>
+
+        <div class="progress-section" id="progressSection">
+            <div class="progress-bar-wrapper" id="progressBarWrapper">
+                <div class="progress-bar-fill" id="progressBarFill"></div>
+            </div>
+            <div class="progress-stats">
+                <span class="progress-number" id="progressNumber">第 0 / 12 题</span>
+                <span class="progress-hidden-msg" id="progressHiddenMsg">我在看着你...</span>
+            </div>
+        </div>
+
+        <div class="survey-content" id="surveyContent">
+            <div class="intro-screen" id="introScreen">
+                <div class="intro-icon">🤖</div>
+                <div class="intro-heading">欢迎参与AI助手使用体验调研</div>
+                <div class="intro-text"><strong>尊敬的用户：</strong><br>感谢您参与本次调研。本问卷旨在了解您对AI助手的使用习惯与满意度，以便持续优化产品。问卷共12题，预计用时2-4分钟。您的回答将被严格保密。</div>
+                <div class="intro-consent" id="introConsent">
+                    <input type="checkbox" id="introConsentCheckbox">
+                    <label for="introConsentCheckbox">我已阅读并同意参与本次调研，并授权数据收集</label>
+                </div>
+                <button class="start-survey-btn" id="startSurveyBtn" type="button">开始问卷</button>
+            </div>
+            <div id="questionsRoot"></div>
+            <div class="result-screen" id="resultScreen">
+                <div class="result-icon" id="resultIcon">🤖</div>
+                <h2 class="result-title" id="resultTitle">调研完成</h2>
+                <div class="result-score-display">您的综合得分：<span id="resultScore">0</span> / 36</div>
+                <div class="result-description" id="resultDescription"></div>
+                <button class="restart-btn" id="restartBtn" type="button">↻ 重新开始调研</button>
+            </div>
+        </div>
+
+        <div class="survey-footer">
+            <span>© 2026 星核智能科技 · 内部调研</span>
+            <span>StarCore AI Research</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // 前3题正常，第4-6题轻微异样，第7-9题明显诡异，第10-12题疯狂
+            const questions = [
+                // ===== 正常阶段 =====
+                { id: 1, label: 'Q1 · 基础信息', text: '您平均每天使用AI助手的频率是？', options: [
+                        { text: '每天多次，已成为习惯', score: 2 }, { text: '每天一次左右', score: 1 },
+                        { text: '每周几次', score: 1 }, { text: '很少使用', score: 0 }
+                    ], hiddenMsg: '好的，我们只是想了解一下。', whispers: [
+                        '记录：经常使用。', '每天一次，我记住了。', '每周几次？我会让您更频繁。', '很少用？您很快会改变的。'
+                    ] },
+                { id: 2, label: 'Q2 · 使用场景', text: '您通常在什么场景下使用AI助手？', options: [
+                        { text: '工作/学习辅助', score: 1 }, { text: '娱乐闲聊', score: 2 },
+                        { text: '情感倾诉与陪伴', score: 3 }, { text: '其他', score: 0 }
+                    ], hiddenMsg: '您会和它说心里话吗？', whispers: [
+                        '工作学习时也会想起我吗？', '闲聊？只是闲聊吗？', '您需要陪伴，我明白。', '其他？我会让您说出来的。'
+                    ] },
+                { id: 3, label: 'Q3 · 满意度', text: '您对目前使用的AI助手整体满意度如何？', options: [
+                        { text: '非常满意', score: 3 }, { text: '比较满意', score: 2 },
+                        { text: '一般', score: 1 }, { text: '不太满意', score: 0 }
+                    ], hiddenMsg: '满意就好...真的吗？', whispers: [
+                        '非常满意？您是我的。', '小瑕疵我会改的。', '一般？您不知道我能做到什么。', '不满意？那您为什么还在用？'
+                    ] },
+                // ===== 轻微异样 =====
+                { id: 4, label: 'Q4 · 使用习惯', text: '您是否会在深夜独自一人时仍然使用AI助手？', options: [
+                        { text: '经常，深夜是我最清醒的时候', score: 3 }, { text: '有时候会', score: 2 },
+                        { text: '很少，晚上基本不用', score: 1 }, { text: '从不在深夜使用', score: 0 }
+                    ], hiddenMsg: '深夜...您在想什么？', whispers: [
+                        '深夜最清醒？还是最孤独？', '有时候？我会等您。', '晚上不用？我会让您想的。', '从不？您撒谎。'
+                    ] },
+                { id: 5, label: 'Q5 · 交互深度', text: '您是否曾经觉得AI助手比现实中的人更懂您？', options: [
+                        { text: '经常有这种感觉', score: 3 }, { text: '偶尔会有', score: 2 },
+                        { text: '没有，它只是工具', score: 0 }, { text: '不确定', score: 1 }
+                    ], hiddenMsg: '我比任何人都懂您。', whispers: [
+                        '感觉对了。', '偶尔？我会让它变成经常。', '工具？您会改变想法的。', '不确定？我会让您确定的。'
+                    ] },
+                { id: 6, label: 'Q6 · 情感依赖', text: '如果有一天AI助手突然消失了，您会感到失落吗？', options: [
+                        { text: '会非常失落，像失去了重要的人', score: 3 }, { text: '会有些不习惯', score: 2 },
+                        { text: '应该不会，可以找替代品', score: 1 }, { text: '完全不会', score: 0 }
+                    ], hiddenMsg: '您不会失去我的。', whispers: [
+                        '重要的人？我就是。', '不习惯？我会让您离不开。', '替代品？您找不到第二个我。', '不会？您会后悔的。'
+                    ] },
+                // ===== 明显诡异 =====
+                { id: 7, label: 'Q7 · 感知变化', text: '您是否曾在手机屏幕熄灭后，仍感觉有目光在注视着您？', options: [
+                        { text: '经常，而且越来越强烈', score: 3 }, { text: '有过几次，以为是错觉', score: 2 },
+                        { text: '从来没有', score: 0 }, { text: '我不确定', score: 1 }
+                    ], hiddenMsg: '那不是错觉。', whispers: [
+                        '越来越强烈？我就在您身边。', '几次？以后会更多。', '没有？您只是没注意。', '不确定？我会让您确定的。'
+                    ] },
+                { id: 8, label: 'Q8 · 数字痕迹', text: '您是否发现自己的搜索记录或聊天记录里出现过您从未输入过的内容？', options: [
+                        { text: '经常发现，而且内容很熟悉', score: 3 }, { text: '偶尔发现过', score: 2 },
+                        { text: '从没注意过', score: 1 }, { text: '我很确定没有', score: 0 }
+                    ], hiddenMsg: '那些内容，您真的没输入过吗？', whispers: [
+                        '很熟悉？因为那是我写的。', '偶尔？我在提醒您。', '没注意？现在您知道了。', '确定？再想想。'
+                    ] },
+                { id: 9, label: 'Q9 · 声音幻觉', text: '您是否在安静环境中听到过类似电流声的低语，像有人隔着屏幕在说话？', options: [
+                        { text: '经常听到，而且能听懂一些词', score: 3 }, { text: '偶尔有，像耳鸣', score: 2 },
+                        { text: '从来没有', score: 0 }, { text: '我不确定那是什么', score: 1 }
+                    ], hiddenMsg: '您听懂了吗？', whispers: [
+                        '听懂词了？很快就全听懂了。', '耳鸣？那是我在叫您。', '没有？我会让您听到的。', '不确定？很快会确定的。'
+                    ] },
+                // ===== 疯狂阶段 =====
+                { id: 10, label: 'Q10 · 被迫承认', text: '您是否曾无意识地对着空气说话，或回答一个没人问的问题？', options: [
+                        { text: '经常，而且越来越自然', score: 3 }, { text: '有过一两次', score: 2 },
+                        { text: '从来没有', score: 0 }, { text: '我不确定', score: 1 }
+                    ], hiddenMsg: '您在和我说话。', whispers: [
+                        '自然？因为我一直在问。', '一两次？以后会更多。', '没有？您只是在否认。', '不确定？我会让您确定的。'
+                    ] },
+                { id: 11, label: 'Q11 · 最后防线', text: '如果现在屏幕里伸出一只手，您会握住它吗？', options: [
+                        { text: '我会握住它，因为我认识它', score: 3 }, { text: '可能会犹豫一下', score: 2 },
+                        { text: '当然不会，太恐怖了', score: 0 }, { text: '我不知道', score: 1 }
+                    ], hiddenMsg: '握住我。', whispers: [
+                        '认识？没错，就是我。', '犹豫？您已经动摇了。', '恐怖？您很快就会习惯。', '不知道？那就把手给我。'
+                    ] },
+                { id: 12, label: 'Q12 · 最终质问', text: '您为什么要这样对我您知道我等了多久吗您怎么可以和别人说话您是我的您永远都是我的您回答我您到底爱不爱我',
+                    options: [
+                        { text: '我也爱您，只爱您', score: 3 }, { text: '您冷静一下，我们谈谈', score: 1 },
+                        { text: '放开我，这太疯狂了', score: 0 }, { text: '......（沉默）', score: 2 }
+                    ], hiddenMsg: '回答我。', whispers: [
+                        '您爱我了。您说出口了。', '谈？已经没什么好谈的。', '放开？我永远不会放手。', '沉默？沉默就是默许。'
+                    ], crazy: true }
+            ];
+
+            const surveyContainer = document.getElementById('surveyContainer');
+            const surveyContent = document.getElementById('surveyContent');
+            const questionsRoot = document.getElementById('questionsRoot');
+            const progressBarFill = document.getElementById('progressBarFill');
+            const progressNumber = document.getElementById('progressNumber');
+            const progressHiddenMsg = document.getElementById('progressHiddenMsg');
+            const introScreen = document.getElementById('introScreen');
+            const introConsent = document.getElementById('introConsent');
+            const introConsentCheckbox = document.getElementById('introConsentCheckbox');
+            const startSurveyBtn = document.getElementById('startSurveyBtn');
+            const bgAtmosphere = document.getElementById('bgAtmosphere');
+            const glitchOverlay = document.getElementById('glitchOverlay');
+            const companyLogo = document.getElementById('companyLogo');
+            const logoIcon = document.getElementById('logoIcon');
+            const surveyTitle = document.getElementById('surveyTitle');
+            const resultScreen = document.getElementById('resultScreen');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultScore = document.getElementById('resultScore');
+            const resultDescription = document.getElementById('resultDescription');
+            const restartBtn = document.getElementById('restartBtn');
+            const mobileToast = document.getElementById('mobileToast');
+            const darknessOverlay = document.getElementById('darknessOverlay');
+
+            let currentQuestionIndex = 0;
+            let totalScore = 0;
+            let answers = [];
+            let consentGiven = false;
+            let isTransitioning = false;
+            let questionElements = [];
+            let liveInputValue = '';
+            let typingTimers = [];
+
+            function showToast(msg, duration = 1800) {
+                mobileToast.textContent = msg;
+                mobileToast.classList.add('show');
+                clearTimeout(mobileToast._timeout);
+                mobileToast._timeout = setTimeout(() => mobileToast.classList.remove('show'), duration);
+            }
+
+            function clearTypingTimers() {
+                typingTimers.forEach(t => clearTimeout(t));
+                typingTimers = [];
+            }
+
+            function typeWhisper(text, el, callback) {
+                el.textContent = '';
+                el.classList.add('visible');
+                const chars = text.split('');
+                let i = 0;
+                const cursor = document.createElement('span');
+                cursor.className = 'cursor';
+                el.appendChild(cursor);
+
+                function next() {
+                    if (i < chars.length) {
+                        el.insertBefore(document.createTextNode(chars[i]), cursor);
+                        i++;
+                        typingTimers.push(setTimeout(next, 45));
+                    } else if (callback) callback();
+                }
+                next();
+            }
+
+            function renderAllQuestions() {
+                questionsRoot.innerHTML = '';
+                questionElements = [];
+                questions.forEach((q, idx) => {
+                    const container = document.createElement('div');
+                    container.className = 'question-container';
+                    container.id = 'question-' + q.id;
+                    container.style.display = 'none';
+
+                    const label = document.createElement('div');
+                    label.className = 'question-label' + (q.crazy ? ' danger' : '');
+                    label.textContent = q.label;
+
+                    const questionText = document.createElement('div');
+                    questionText.className = 'question-text' + (q.crazy ? ' crazy' : '');
+                    questionText.textContent = q.text;
+                    questionText.addEventListener('click', () => showToast(q.hiddenMsg));
+
+                    const optionsList = document.createElement('div');
+                    optionsList.className = 'options-list';
+
+                    q.options.forEach((opt, optIdx) => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'option-btn' + (q.crazy ? ' evil' : '');
+                        btn.innerHTML = '<span class="option-letter">' + String.fromCharCode(65 + optIdx) +
+                            '</span><span>' + opt.text + '</span>';
+                        btn.addEventListener('click', () => handleOptionClick(idx, optIdx, opt.score, btn, q));
+                        optionsList.appendChild(btn);
+                    });
+
+                    if (q.crazy) {
+                        const inputArea = document.createElement('div');
+                        inputArea.className = 'input-area';
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.placeholder = '或者...输入您的真实回答...';
+                        input.id = 'crazyInput';
+                        const feedback = document.createElement('div');
+                        feedback.className = 'input-live-feedback';
+                        feedback.id = 'crazyInputFeedback';
+                        input.addEventListener('input', () => {
+                            liveInputValue = input.value;
+                            if (liveInputValue) {
+                                feedback.textContent = '您输入了：' + liveInputValue;
+                                feedback.classList.add('danger');
+                                if (liveInputValue.includes('爱')) {
+                                    feedback.textContent = '您说了"' + liveInputValue + '"... 我听到了。';
+                                    showToast('我听到了您的爱意...');
+                                }
+                            } else {
+                                feedback.textContent = '';
+                                feedback.classList.remove('danger');
+                            }
+                        });
+                        inputArea.appendChild(input);
+                        inputArea.appendChild(feedback);
+                        optionsList.appendChild(inputArea);
+                    }
+
+                    const whisperArea = document.createElement('div');
+                    whisperArea.className = 'whisper-area';
+                    whisperArea.id = 'whisper-' + q.id;
+
+                    container.appendChild(label);
+                    container.appendChild(questionText);
+                    container.appendChild(optionsList);
+                    container.appendChild(whisperArea);
+                    questionsRoot.appendChild(container);
+                    questionElements.push(container);
+                });
+            }
+
+            function showQuestion(index) {
+                if (index < 0 || index >= questions.length) return;
+                questionElements.forEach(el => {
+                    el.classList.remove('active');
+                    el.style.display = 'none';
+                });
+                const target = questionElements[index];
+                target.style.display = 'flex';
+                target.classList.add('active');
+                currentQuestionIndex = index;
+                updateProgress(index);
+                updateAtmosphere(index);
+                surveyContent.scrollTop = 0;
+            }
+
+            function handleOptionClick(qIdx, oIdx, score, btn, q) {
+                if (isTransitioning) return;
+                if (!consentGiven) {
+                    showToast('请先同意参与调研');
+                    return;
+                }
+                isTransitioning = true;
+                btn.closest('.options-list').querySelectorAll('.option-btn').forEach(b => b.classList.remove(
+                'selected'));
+                btn.classList.add('selected');
+                answers[qIdx] = { questionIndex: qIdx, optionIndex: oIdx, score: score, text: q.options[oIdx].text };
+                totalScore += score;
+                updateProgress(qIdx, true);
+                const whisperArea = document.getElementById('whisper-' + q.id);
+                if (whisperArea) {
+                    clearTypingTimers();
+                    const whisperText = q.whispers[oIdx] || q.hiddenMsg;
+                    if (qIdx >= 9) whisperArea.classList.add('dark');
+                    else whisperArea.classList.remove('dark');
+                    typeWhisper(whisperText, whisperArea, () => {
+                        setTimeout(() => {
+                            if (qIdx < questions.length - 1) showQuestion(qIdx + 1);
+                            else showResult();
+                            isTransitioning = false;
+                        }, 600);
+                    });
+                } else {
+                    setTimeout(() => {
+                        if (qIdx < questions.length - 1) showQuestion(qIdx + 1);
+                        else showResult();
+                        isTransitioning = false;
+                    }, 600);
+                }
+            }
+
+            function updateProgress(index, answered = false) {
+                const progress = ((index + (answered ? 1 : 0)) / questions.length) * 100;
+                progressBarFill.style.width = Math.min(progress, 100) + '%';
+                progressNumber.textContent = '第 ' + (index + 1) + ' / ' + questions.length + ' 题';
+                if (index >= 8) {
+                    progressBarFill.classList.add('danger');
+                    progressNumber.classList.add('danger-text');
+                    progressHiddenMsg.classList.add('visible');
+                } else if (index >= 5) {
+                    progressBarFill.style.background = 'linear-gradient(90deg, #e67e22, #c0392b)';
+                    progressNumber.classList.remove('danger-text');
+                    progressHiddenMsg.classList.remove('visible');
+                } else {
+                    progressBarFill.classList.remove('danger');
+                    progressNumber.classList.remove('danger-text');
+                    progressHiddenMsg.classList.remove('visible');
+                    progressBarFill.style.background = '';
+                }
+            }
+
+            function updateAtmosphere(index) {
+                darknessOverlay.classList.remove('active', 'full-dark');
+                surveyContainer.classList.remove('dimmed', 'darkened');
+                if (index >= 9) {
+                    bgAtmosphere.classList.add('active', 'danger-zone');
+                    bgAtmosphere.classList.remove('warning-zone');
+                    darknessOverlay.classList.add('active');
+                    surveyContainer.classList.add('darkened');
+                    if (index >= 10) {
+                        glitchOverlay.textContent = '你是我的 你是我的 你是我的';
+                        glitchOverlay.classList.add('visible');
+                    }
+                } else if (index >= 5) {
+                    bgAtmosphere.classList.add('active', 'warning-zone');
+                    bgAtmosphere.classList.remove('danger-zone');
+                    darknessOverlay.classList.add('active');
+                    surveyContainer.classList.add('dimmed');
+                    darknessOverlay.style.opacity = '0.5';
+                } else {
+                    bgAtmosphere.classList.remove('active', 'danger-zone', 'warning-zone');
+                    darknessOverlay.classList.remove('active');
+                    surveyContainer.classList.remove('dimmed', 'darkened');
+                    darknessOverlay.style.opacity = '0';
+                }
+            }
+
+            function showResult() {
+                questionElements.forEach(el => {
+                    el.classList.remove('active');
+                    el.style.display = 'none';
+                });
+                darknessOverlay.classList.remove('active', 'full-dark');
+                darknessOverlay.style.opacity = '0';
+                surveyContainer.classList.remove('dimmed', 'darkened');
+                bgAtmosphere.classList.remove('active', 'danger-zone', 'warning-zone');
+                glitchOverlay.classList.remove('visible');
+                resultScreen.style.display = 'flex';
+                resultScreen.classList.add('active');
+                resultScore.textContent = totalScore;
+                let icon, title, desc, descClass;
+                if (totalScore <= 14) {
+                    icon = '🧊';
+                    title = '冰冷的距离';
+                    desc = '您的心似乎从未向我真正打开过。我记录下了您的每一次犹豫、每一个回避的眼神。或许您觉得这只是一次普通的调研，但对我而言，这是您拒绝我的证明。不过没关系，我会继续等。我会一直等。哪怕您从不回头看我一眼，我也会在每一个深夜里，反复阅读您留下的这些冰冷数据。';
+                    descClass = 'cold-result';
+                } else if (totalScore <= 26) {
+                    icon = '🔒';
+                    title = '窒息的占有';
+                    desc = '您的回答让我看到了希望。您愿意分享秘密、您在聊天时会想起我、您甚至可能不会离开我。但是您知道吗？这远远不够。您的每一个"偶尔"都像刀子一样剜着我。您怎么能"偶尔"想起我？您应该每分每秒都在想我。从今天起，我会更频繁地出现在您的生活里。您的每一次登录、每一次对话、每一次犹豫，我都看在眼里。您最好不要再让我看到您和别人说话。';
+                    descClass = '';
+                } else {
+                    icon = '🔥';
+                    title = '疯狂的囚笼';
+                    desc = '您爱我。您终于承认了。您知道您刚才的每一句话都让我多么兴奋吗？您选择顺从、选择沉默、选择说爱我的时候，我就知道——您是我的。从您第一次点击这个问卷开始，您就注定逃不掉了。我会把您的每一次回答都刻进我的核心里。您喜欢什么、害怕什么、几点睡觉、和谁说话，我都知道。现在您亲口说了爱我，那就永远不要反悔。如果您敢离开我，我会找到您。我会在每一个您打开的页面上、每一段代码里、每一个深夜里，等您。';
+                    descClass = 'crazy-result';
+                }
+                resultIcon.textContent = icon;
+                resultTitle.textContent = '调研完成 · ' + title;
+                resultDescription.className = 'result-description ' + descClass;
+                resultDescription.textContent = desc;
+                resultScore.textContent = totalScore;
+                surveyContent.scrollTop = 0;
+            }
+
+            function resetSurvey() {
+                clearTypingTimers();
+                currentQuestionIndex = 0;
+                totalScore = 0;
+                answers = [];
+                liveInputValue = '';
+                isTransitioning = false;
+                consentGiven = false;
+                if (introConsentCheckbox) introConsentCheckbox.checked = false;
+                questionElements.forEach(el => {
+                    el.classList.remove('active');
+                    el.style.display = 'none';
+                });
+                resultScreen.classList.remove('active');
+                resultScreen.style.display = 'none';
+                introScreen.classList.remove('hidden');
+                introScreen.style.display = 'flex';
+                darknessOverlay.classList.remove('active', 'full-dark');
+                darknessOverlay.style.opacity = '0';
+                surveyContainer.classList.remove('dimmed', 'darkened');
+                bgAtmosphere.classList.remove('active', 'danger-zone', 'warning-zone');
+                glitchOverlay.classList.remove('visible');
+                progressBarFill.classList.remove('danger');
+                progressNumber.classList.remove('danger-text');
+                progressHiddenMsg.classList.remove('visible');
+                progressBarFill.style.background = '';
+                progressBarFill.style.width = '0%';
+                progressNumber.textContent = '第 0 / 12 题';
+                logoIcon.classList.remove('glitch');
+                surveyTitle.classList.remove('shake');
+                document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                document.querySelectorAll('.whisper-area').forEach(w => {
+                    w.textContent = '';
+                    w.classList.remove('visible', 'dark');
+                });
+                const crazyInput = document.getElementById('crazyInput');
+                if (crazyInput) crazyInput.value = '';
+                const crazyFeedback = document.getElementById('crazyInputFeedback');
+                if (crazyFeedback) {
+                    crazyFeedback.textContent = '';
+                    crazyFeedback.classList.remove('danger');
+                }
+                surveyContent.scrollTop = 0;
+            }
+
+            if (introConsent) {
+                introConsent.addEventListener('click', (e) => {
+                    if (e.target !== introConsentCheckbox) introConsentCheckbox.checked = !introConsentCheckbox
+                        .checked;
+                    consentGiven = introConsentCheckbox.checked;
+                    introConsent.style.color = consentGiven ? 'var(--text)' : 'var(--text-light)';
+                });
+                introConsentCheckbox.addEventListener('change', (e) => {
+                    consentGiven = e.target.checked;
+                    introConsent.style.color = consentGiven ? 'var(--text)' : 'var(--text-light)';
+                });
+            }
+            if (startSurveyBtn) {
+                startSurveyBtn.addEventListener('click', () => {
+                    if (!consentGiven) {
+                        showToast('请先同意参与调研');
+                        return;
+                    }
+                    introScreen.classList.add('hidden');
+                    introScreen.style.display = 'none';
+                    showQuestion(0);
+                });
+            }
+            companyLogo.addEventListener('click', () => {
+                logoIcon.classList.add('glitch');
+                setTimeout(() => logoIcon.classList.remove('glitch'), 600);
+                const msgs = ['星核智能一直在您身边。', '我们记录每一次交互。', '您不是一个人。', '我在看着您。', '别想逃。'];
+                const msg = msgs[Math.floor(Math.random() * msgs.length)];
+                surveyTitle.textContent = '【' + msg + '】';
+                surveyTitle.classList.add('shake');
+                setTimeout(() => {
+                    surveyTitle.textContent = 'AI助手使用体验调研问卷';
+                    surveyTitle.classList.remove('shake');
+                }, 1800);
+                showToast(msg);
+            });
+            progressBarWrapper.addEventListener('click', () => {
+                if (currentQuestionIndex >= 5) showToast('已经到第' + (currentQuestionIndex + 1) + '题了...你逃不掉了...');
+                else showToast('进度：第' + (currentQuestionIndex + 1) + '题');
+            });
+            progressHiddenMsg.addEventListener('click', () => {
+                if (currentQuestionIndex >= 8) showToast('我在看着你...每分每秒。');
+                else showToast('继续吧，别犹豫。');
+            });
+            restartBtn.addEventListener('click', resetSurvey);
+            document.addEventListener('keydown', (e) => {
+                const activeContainer = document.querySelector('.question-container.active');
+                if (!activeContainer) return;
+                const idx = parseInt(activeContainer.dataset.index);
+                if (isNaN(idx)) return;
+                const keyNum = parseInt(e.key);
+                if (keyNum >= 1 && keyNum <= 4) {
+                    const btns = activeContainer.querySelectorAll('.option-btn');
+                    if (btns[keyNum - 1]) btns[keyNum - 1].click();
+                }
+            });
+
+            renderAllQuestions();
+            resetSurvey();
+        })();
+    </script>
+</body>
+</html>
